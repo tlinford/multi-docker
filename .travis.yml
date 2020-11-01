@@ -1,0 +1,20 @@
+sudo: required
+servics:
+  - docker
+
+before_install:
+  - docker build -t tlinford/react-test -f client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true tlinford/react-test npm test
+
+after_success:
+  - docker build -t tlinford/multi-client ./client
+  - docker build -t tlinford/multi-nginx ./nginx
+  - docker build -t tlinford/multi-server ./server
+  - docker bulid -t tlinford/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push tlinford/multi-client
+  - docker push tlinford/multi-nginx
+  - docker push tlinford/multi-server
+  - docker push tlinford/multi-worker
